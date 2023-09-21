@@ -13,10 +13,9 @@ WR_L_DISPLAY  = 24931
 WR_R_DISPLAY  = 24932
 WR_RED_LEDS   = 24933
 WR_GREEN_LEDS = 24934
-DATA = 0
+
 fd = os.open(sys.argv[1], os.O_RDWR)
 button = 0
-
 k = 1
 i = 0
 score = 0
@@ -52,7 +51,6 @@ heart = pygame.transform.scale(heart, (50, 50))
 dead_heart = pygame.image.load('dead_heart.png')
 dead_heart = pygame.transform.scale(dead_heart, (50, 50))
 mug = pygame.transform.scale(mug, (100, 100))
-
 
 class Splash(pygame.sprite.Sprite):
 
@@ -97,20 +95,29 @@ menuzinho = 0
 while True:
     clock.tick(30)
     screen.fill(BLACK)
+
+    data_red = 0x00000000
+    ioctl(fd, WR_RED_LEDS)
+    os.write(fd, data_red.to_bytes(4, 'little'))
+
+    data_green = 0x00000000
+    ioctl(fd, WR_GREEN_LEDS)
+    os.write(fd, data_green.to_bytes(4, 'little'))
+
+    data_L = 0xFFFFFFFF
+    ioctl(fd, WR_L_DISPLAY)
+    os.write(fd, data_L.to_bytes(4, 'little'))
+
+    data_R = 0xFFFFFFFF
+    ioctl(fd, WR_R_DISPLAY)
+    os.write(fd, data_L.to_bytes(4, 'little'))
+
     # if menuzinho == 0:
     #     msg1 = 'Sweeten the Coffee'
     #     text1 = Font2.render(msg1, True, (250, 250, 250))
     #     screen.blit(text1, (520, 30))
     #     if pygame.key.get_pressed()[K_KP_ENTER]:
     #             menuzinho = 1
-
-    data = 0x00000000
-    ioctl(fd, WR_RED_LEDS)
-    os.write(fd, data.to_bytes(4, 'little'))
-
-    data = 0x00000000
-    ioctl(fd, WR_RED_LEDS)
-    os.write(fd, data.to_bytes(4, 'little'))
 
     screen.blit(background, (0, 0))
     screen.blit(sugar, (X_sugar, Y_sugar))
@@ -157,12 +164,52 @@ while True:
             hearts = hearts - 1
             screen.blit(dead_heart, (600, 20))
             X_sugar = positions_sugar[i_sugar]
+    
+    if hearts == 0:
+        data_L = 0x40404040
+    elif hearts == 1:
+        data_L = 0x40404079
+    elif hearts == 2:
+        data_L = 0x40404024
+    elif hearts == 3:
+        data_L = 0x40404030
+    ioctl(fd, WR_L_DISPLAY)
+    os.write(fd, data_L.to_bytes(4, 'little'))
+
+    dezena = score//10
+    unidade = score%10
+    if dezena == 0:
+        data_R = 0x40404000
+    elif dezena == 1:
+        data_R = 0x40407900
+    if unidade == 0:
+        data_R += 0x40
+    elif unidade == 1:
+        data_R += 0x79
+    elif unidade == 2:
+        data_R += 0x24
+    elif unidade == 3:
+        data_R += 0x30
+    elif unidade == 4:
+        data_R += 0x19
+    elif unidade == 5:
+        data_R += 0x12
+    elif unidade == 6:
+        data_R += 0x02
+    elif unidade == 7:
+        data_R += 0x78
+    elif unidade == 8:
+        data_R += 0x00
+    elif unidade == 9:
+        data_R += 0x10
+    ioctl(fd, WR_R_DISPLAY)
+    os.write(fd, data_R.to_bytes(4, 'little'))
 
     if hearts == 0 :
         END_GAME = True
-        data = 0xFFFFFFFF
+        data_red = 0xFFFFFFFF
         ioctl(fd, WR_RED_LEDS)
-        os.write(fd, data.to_bytes(4, 'little'))
+        os.write(fd, data_red.to_bytes(4, 'little'))
         exit()
 
 
@@ -172,14 +219,11 @@ while True:
         screen.blit(dead_heart, (550, 20))
         screen.blit(dead_heart, (600, 20))
         screen.blit(dead_heart, (650, 20))
-        data = 0xFFFFFFFF
+        data_green = 0xFFFFFFFF
         ioctl(fd, WR_GREEN_LEDS)
-        os.write(fd, data.to_bytes(4, 'little'))
+        os.write(fd, data_green.to_bytes(4, 'little'))
         exit()
 
     Game_Sprites.draw(screen)
     Game_Sprites.update(X_mug)
     pygame.display.flip()
-        
-
-
