@@ -57,7 +57,6 @@ dead_heart = pygame.transform.scale(dead_heart, (50, 50))
 mug = pygame.transform.scale(mug, (100, 100))
 
 class Splash(pygame.sprite.Sprite):
-
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.sprites = []
