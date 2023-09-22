@@ -351,4 +351,3 @@ while True:
         if int.from_bytes(button, 'little') != 15:
             parte_jogo = 0
             pygame.time.delay(500)
-
